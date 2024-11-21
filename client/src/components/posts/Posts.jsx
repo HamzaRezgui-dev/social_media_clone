@@ -4,17 +4,21 @@ import "./posts.scss";
 import { useQuery } from "@tanstack/react-query";
 
 const Posts = () => {
-  const { isLoading, error, data } = useQuery(["posts"], () => {
-    makeRequest.get("/posts").then((res) => {
+  const { isLoading, error, data } = useQuery({
+    queryKey: ["posts"],
+    queryFn: async () => {
+      const res = await makeRequest.get("/posts");
       return res.data;
-    });
+    },
   });
 
   return (
     <div className="posts">
-      {data.map((post) => (
-        <Post post={post} key={post.id} />
-      ))}
+      {error
+        ? "something went wrong"
+        : isLoading
+        ? "loading"
+        : data.map((post) => <Post post={post} key={post.id} />)}
     </div>
   );
 };
