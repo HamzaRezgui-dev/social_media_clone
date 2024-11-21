@@ -29,9 +29,6 @@
         font-size: 100px;
         line-height: 100px;
       }
-      
-      p {
-      }
 
       span {
         font-size: 14px;
@@ -70,7 +67,12 @@
         border-bottom: 1px solid lightgray;
         padding: 20px 10px;
         }
-        
+
+        .error {
+          color: red;
+          font-size: 12px;
+        }
+
         button {
           width: 50%;
           padding: 10px;
