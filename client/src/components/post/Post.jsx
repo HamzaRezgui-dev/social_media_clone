@@ -8,12 +8,22 @@ import { Link } from "react-router-dom";
 import Comments from "../comments/Comments";
 import { useState } from "react";
 import moment from "moment";
+import { useQuery } from "@tanstack/react-query";
+import { makeRequest } from "../../axios";
 
 const Post = ({ post }) => {
   const [commentOpen, setCommentOpen] = useState(false);
-
+  const { data } = useQuery({
+    queryKey: ["comments", post.id],
+    queryFn: async () => {
+      const res = await makeRequest.get(`/comments?postId=${post.id}`);
+      return res.data;
+    },
+  });
   //TEMPORARY
   const liked = false;
+
+  console.log(data);
 
   return (
     <div className="post">
@@ -44,14 +54,14 @@ const Post = ({ post }) => {
           </div>
           <div className="item" onClick={() => setCommentOpen(!commentOpen)}>
             <TextsmsOutlinedIcon />
-            12 Comments
+            {data && data.length > 0 ? `${data.length} Comments` : "0 Comments"}
           </div>
           <div className="item">
             <ShareOutlinedIcon />
             Share
           </div>
         </div>
-        {commentOpen && <Comments />}
+        {commentOpen && <Comments postId={post.id} />}
       </div>
     </div>
   );
