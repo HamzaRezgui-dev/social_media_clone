@@ -10,15 +10,15 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Posts from "../../components/posts/Posts";
 import { useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../../axios";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
 
 const Profile = () => {
   const userId = parseInt(useLocation().pathname.split("/")[2]);
-  const currentUser = useContext(AuthContext);
-  const { isLoading, data: user } = useQuery({
+  const { currentUser } = useContext(AuthContext);
+  const { isLoading: loadingUser, data: user } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const res = await makeRequest.get(`/users/find/${userId}`);
@@ -26,10 +26,38 @@ const Profile = () => {
     },
   });
 
-  console.log(user);
+  const { isLoading: loadingFollower, data: followers } = useQuery({
+    queryKey: ["relationship"],
+    queryFn: async () => {
+      const res = await makeRequest.get(
+        `/relationships?followedUserId=${userId}`
+      );
+      return res.data;
+    },
+  });
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (followed) => {
+      if (followed)
+        return makeRequest.delete(`/relationships?userId=${userId}`);
+      return makeRequest.post("/relationships", { userId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["relationship"]);
+    },
+  });
+
+  const handleFollow = async () => {
+    mutation.mutate(followers.includes(currentUser.id));
+  };
+
+  console.log(userId, currentUser.id);
+
   return (
     <div className="profile">
-      {isLoading ? (
+      {loadingUser ? (
         "Loading"
       ) : (
         <>
@@ -76,10 +104,16 @@ const Profile = () => {
                     <span>{user.website}</span>
                   </div>
                 </div>
-                {userId === currentUser.id ? (
+                {loadingFollower ? (
+                  "Loading"
+                ) : userId === currentUser.id ? (
                   <button>Update</button>
                 ) : (
-                  <button>follow</button>
+                  <button onClick={handleFollow}>
+                    {followers?.includes(currentUser.id)
+                      ? "Following"
+                      : "Follow"}
+                  </button>
                 )}
               </div>
               <div className="right">
@@ -87,7 +121,7 @@ const Profile = () => {
                 <MoreVertIcon />
               </div>
             </div>
-            <Posts />
+            <Posts userId={userId} />
           </div>
         </>
       )}
