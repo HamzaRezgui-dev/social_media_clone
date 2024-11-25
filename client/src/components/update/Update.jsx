@@ -55,7 +55,10 @@ const Update = ({ setOpenUpdate, user }) => {
       <div className="backdrop" onClick={() => setOpenUpdate(false)}></div>
 
       <div className="update">
-        <h2>Update</h2>
+        <div className="header-update">
+          <h2>Update</h2>
+          <button className="x-button" onClick={() => setOpenUpdate(false)}>X</button>
+        </div>
         <form>
           <input
             type="file"
@@ -85,9 +88,10 @@ const Update = ({ setOpenUpdate, user }) => {
             onChange={handleChange}
             value={texts.website}
           />
-          <button onClick={handleClick}>Update</button>
+          <button className="update-profile-button" style={{ marginTop: "20px" }} onClick={handleClick}>
+            Update
+          </button>
         </form>
-        <button onClick={() => setOpenUpdate(false)}>X</button>
       </div>
     </>
   );

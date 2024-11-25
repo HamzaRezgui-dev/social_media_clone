@@ -51,3 +51,21 @@ export const addPost = async (req, res) => {
     });
   });
 };
+
+export const deletePost = async (req, res) => {
+  const postId = req.params.postId;
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("User not logged in");
+
+  jwt.verify(token, "secretkey", (err, data) => {
+    if (err) return res.status(403).json("Invalid token");
+    const deleteQuery = "DELETE FROM posts WHERE id = ? AND userId = ?";
+
+    db.query(deleteQuery, [req.params.id, data.id], (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      if (result.affectedRows > 0) return res.status(200).json("Post deleted");
+      return res.status(403).json("You can only delete your post");
+    });
+  });
+};
